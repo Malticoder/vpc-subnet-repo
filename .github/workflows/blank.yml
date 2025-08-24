@@ -1,55 +1,44 @@
-name: Terraform Deployment
+name: Deploy VPC & Subnet
 
 on:
-  push:
-    branches:
-      - dev
-      - qa
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
 
 jobs:
   terraform:
-    name: Terraform Apply
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      id-token: write
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.8.5
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
-
-      - name: Select Environment
-        id: env_select
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
-            echo "FOLDER=terraform/dev" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "qa" ]]; then
-            echo "FOLDER=terraform/qa" >> $GITHUB_ENV
-          fi
+          terraform_version: 1.6.0
 
       - name: Terraform Init
-        working-directory: ${{ env.FOLDER }}
         run: terraform init
+        working-directory: terraform/${{ github.event.inputs.environment }}
 
       - name: Terraform Plan
-        working-directory: ${{ env.FOLDER }}
-        run: terraform plan -out=tfplan
+        run: terraform plan -var-file="${{ github.event.inputs.environment }}.tfvars"
+        working-directory: terraform/${{ github.event.inputs.environment }}
 
       - name: Terraform Apply
-        if: github.ref_name == 'dev' || github.ref_name == 'qa'
-        working-directory: ${{ env.FOLDER }}
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve -var-file="${{ github.event.inputs.environment }}.tfvars"
+        working-directory: terraform/${{ github.event.inputs.environment }}
+
 
           
