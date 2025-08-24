@@ -36,10 +36,13 @@ jobs:
           terraform_version: 1.5.7
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/${{ steps.envselect.outputs.env }} init
+        working-directory: terraform/${{ steps.envselect.outputs.env }}
+        run: terraform init
 
       - name: Terraform Plan
-        run: terraform -chdir=terraform/${{ steps.envselect.outputs.env }} plan
+        working-directory: terraform/${{ steps.envselect.outputs.env }}
+        run: terraform plan
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform/${{ steps.envselect.outputs.env }} apply -auto-approve
+        working-directory: terraform/${{ steps.envselect.outputs.env }}
+        run: terraform apply -auto-approve
