@@ -5,7 +5,7 @@ on:
     branches:
       - dev
       - qa
-  workflow_dispatch:
+  workflow_dispatch:   
 
 jobs:
   terraform:
@@ -33,18 +33,13 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.6.0
+          terraform_version: 1.5.7
 
       - name: Terraform Init
-        working-directory: terraform/${{ steps.envselect.outputs.env }}
-        run: terraform init
+        run: terraform -chdir=terraform/${{ steps.envselect.outputs.env }} init
 
       - name: Terraform Plan
-        working-directory: terraform/${{ steps.envselect.outputs.env }}
-        run: terraform plan -out=tfplan
+        run: terraform -chdir=terraform/${{ steps.envselect.outputs.env }} plan
 
       - name: Terraform Apply
-        working-directory: terraform/${{ steps.envselect.outputs.env }}
-        run: terraform apply -auto-approve tfplan
-
-        
+        run: terraform -chdir=terraform/${{ steps.envselect.outputs.env }} apply -auto-approve
