@@ -37,6 +37,7 @@ jobs:
 
       - name: Terraform Init
         run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} init
+         cd environment/dev
 
       - name: Terraform Plan
         run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} plan
