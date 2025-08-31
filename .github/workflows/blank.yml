@@ -33,11 +33,10 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.7
+          terraform_version: 1.5
 
       - name: Terraform Init
         run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} init
-         cd environment/dev
 
       - name: Terraform Plan
         run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} plan
