@@ -1,11 +1,15 @@
-name: Terraform VPC Deployment
+name: Deploy VPC & Subnet
 
 on:
-  push:
-    branches:
-      - dev
-      - qa
-  workflow_dispatch:   
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
 
 jobs:
   terraform:
@@ -16,30 +20,22 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set Environment
-        id: envselect
-        run: |
-          if [[ "${GITHUB_REF##*/}" == "dev" ]]; then
-            echo "env=dev" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF##*/}" == "qa" ]]; then
-            echo "env=qa" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.inputs.environment }}" != "" ]]; then
-            echo "env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5
+          terraform_version: 1.6.0
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} init
+        run: terraform init
+        working-directory: terraform/${{ github.event.inputs.environment }}
 
       - name: Terraform Plan
-        run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} plan
+        run: terraform plan -var-file="${{ github.event.inputs.environment }}.tfvars"
+        working-directory: terraform/${{ github.event.inputs.environment }}
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform/environment/${{ steps.envselect.outputs.env }} apply -auto-approve
+        run: terraform apply -auto-approve -var-file="${{ github.event.inputs.environment }}.tfvars"
+        working-directory: terraform/${{ github.event.inputs.environment }}
