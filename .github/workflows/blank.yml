@@ -41,7 +41,11 @@ jobs:
         run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} init
 
       - name: Terraform Plan
+         pwd
+         ls -R
         run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} plan
 
       - name: Terraform Apply
+         pwd
+         ls -R
         run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} apply --auto-approve
