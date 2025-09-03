@@ -36,6 +36,8 @@ jobs:
           terraform_version: 1.5
 
       - name: Terraform Init
+         pwd
+         ls -R
         run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} init
 
       - name: Terraform Plan
