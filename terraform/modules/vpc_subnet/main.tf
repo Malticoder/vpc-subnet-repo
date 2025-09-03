@@ -1,12 +1,12 @@
 
-resource "aws_vpc" "deploy_vpc" {
+resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
   tags = {
     Name = "${var.environment}-vpc"
   }
 }
 
-resource "aws_subnet" "deploy_subnet" {
+resource "aws_subnet" "this" {
   count             = length(var.subnet_cidrs)
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.subnet_cidrs[count.index]
@@ -16,4 +16,5 @@ resource "aws_subnet" "deploy_subnet" {
     Name = "${var.environment}-subnet-${count.index}"
   }
 }
+
 
