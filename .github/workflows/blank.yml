@@ -1,51 +1,47 @@
-name: Terraform VPC Deployment
+name: Create Environment Flow
 
 on:
-  push:
-    branches:
-      - dev
-      - qa
-  workflow_dispatch:   
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose environments:"
+        required: true
+        type: choice
+        default: "none"
+        options:
+          - "dev"
+          - "qa"
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
-  terraform:
+  Create-Infrastructure:
     runs-on: ubuntu-latest
-
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Set Environment
-        id: envselect
-        run: |
-          if [[ "${GITHUB_REF##*/}" == "dev" ]]; then
-            echo "env=dev" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF##*/}" == "qa" ]]; then
-            echo "env=qa" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.inputs.environment }}" != "" ]]; then
-            echo "env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.0
 
-      - name: Terraform Init
-         pwd
-         ls -R
-        run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} init
+      - name: Debug - List Folders
+        run: ls -R
+
+      - name: Initialize Terraform
+        run: |
+          cd terraform/${{ github.event.inputs.environments }}
+          terraform init -backend-config="${{ github.event.inputs.environments }}.backend.tfvars"
 
       - name: Terraform Plan
-         pwd
-         ls -R
-        run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} plan
+        run: |
+          cd terraform/${{ github.event.inputs.environments }}
+          terraform plan -var="environments=${{ github.event.inputs.environments }}"
 
       - name: Terraform Apply
-         pwd
-         ls -R
-        run: terraform -chdir=terraform/environment/dev${{ steps.envselect.outputs.env }} apply --auto-approve
+        run: |
+          cd terraform/${{ github.event.inputs.environments }}
+          terraform apply -auto-approve -var="environments=${{ github.event.inputs.environments }}"
