@@ -31,17 +31,14 @@ jobs:
       - name: Debug - List Folders
         run: ls -R
 
-      - name: Initialize Terraform
-        run: |
-          cd terraform/${{ github.event.inputs.environments }}
-          terraform init -backend-config="${{ github.event.inputs.environments }}.backend.tfvars"
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform/environment/${{ github.event.inputs.environment }}
 
       - name: Terraform Plan
-        run: |
-          cd terraform/${{ github.event.inputs.environments }}
-          terraform plan -var="environments=${{ github.event.inputs.environments }}"
+        run: terraform plan -var-file="${{ github.event.inputs.environment }}.tfvars"
+        working-directory: terraform/environment/${{ github.event.inputs.environment }}
 
       - name: Terraform Apply
-        run: |
-          cd terraform/${{ github.event.inputs.environments }}
-          terraform apply -auto-approve -var="environments=${{ github.event.inputs.environments }}"
+        run: terraform apply -auto-approve -var-file="${{ github.event.inputs.environment }}.tfvars"
+        working-directory: terraform/environment/${{ github.event.inputs.environment }}
