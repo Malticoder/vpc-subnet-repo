@@ -12,6 +12,10 @@ on:
           - "dev"
           - "qa"
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 jobs:
   Create-Infrastructure:
     runs-on: ubuntu-latest
@@ -27,12 +31,6 @@ jobs:
       - name: Debug - List Folders
         run: ls -R
 
-      - name: Export AWS Credentials 
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-      
-
       - name: Terraform Init
         run: terraform init
         working-directory: terraform/environment/${{ github.event.inputs.environment }}
@@ -43,4 +41,4 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: terraform/environment/${{ github.event.inputs.environment }}
+        working-directory: terraform/environment/${{ github.event.inputs.environment }}  
