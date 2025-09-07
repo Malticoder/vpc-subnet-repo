@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Choose environments:"
+        description: "Choose environment:"
         required: true
         type: choice
         default: "none"
